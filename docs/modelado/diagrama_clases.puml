@@ -1,0 +1,137 @@
+@startuml diagrama_clases
+!define RECTANGLE class
+skinparam classAttributeIconSize 0
+
+title Diagrama de Clases - Sistema de Préstamos
+
+class Puesto {
+  + id: Integer {PK}
+  + nombre: String(100)
+  + sueldo: Decimal(10,2)
+  --
+  + __str__(): String
+  + validar_sueldo(): Boolean
+}
+
+class Empleado {
+  + id: Integer {PK}
+  + nombre: String(200)
+  + fecha_ingreso: Date
+  + activo: Boolean
+  --
+  + calcular_antiguedad(): Float
+  + obtener_puesto_actual(): Puesto
+  + obtener_sueldo_actual(): Decimal
+  + puede_solicitar_prestamo(): Boolean
+  + tiene_prestamo_activo(): Boolean
+  + __str__(): String
+}
+
+class HistorialPuesto {
+  + id: Integer {PK}
+  + empleado_id: Integer {FK}
+  + puesto_id: Integer {FK}
+  + fecha_inicio: Date
+  + fecha_fin: Date {nullable}
+  --
+  + es_puesto_actual(): Boolean
+  + calcular_duracion(): Integer
+  + cerrar_puesto(fecha): void
+  + __str__(): String
+}
+
+class Prestamo {
+  + id: Integer {PK}
+  + empleado_id: Integer {FK}
+  + monto: Decimal(12,2)
+  + plazo_meses: Integer
+  + fecha_solicitud: Date
+  + fecha_aprobacion: Date {nullable}
+  + tasa_interes_mensual: Decimal(5,2)
+  + pago_fijo_capital: Decimal(12,2)
+  + fecha_inicio_descuento: Date {nullable}
+  + fecha_fin_descuento: Date {nullable}
+  + saldo_actual: Decimal(12,2)
+  + estado: String(20)
+  --
+  + calcular_pago_capital(): Decimal
+  + calcular_monto_maximo_permitido(): Decimal
+  + validar_requisitos(): Boolean
+  + aprobar(fecha): void
+  + rechazar(motivo): void
+  + generar_calendario_pagos(): List<Dict>
+  + esta_concluido(): Boolean
+  + obtener_total_intereses(): Decimal
+  + obtener_total_pagado(): Decimal
+  + __str__(): String
+}
+
+class Abono {
+  + id: Integer {PK}
+  + prestamo_id: Integer {FK}
+  + numero_abono: Integer
+  + fecha: Date
+  + monto_capital: Decimal(12,2)
+  + monto_interes: Decimal(12,2)
+  + monto_cobrado: Decimal(12,2)
+  + saldo_actual: Decimal(12,2)
+  --
+  + calcular_interes(saldo_anterior): Decimal
+  + calcular_monto_total(): Decimal
+  + aplicar_abono(): void
+  + es_ultimo_abono(): Boolean
+  + __str__(): String
+}
+
+enum EstadoPrestamo {
+  SOLICITADO
+  APROBADO
+  ACTIVO
+  CONCLUIDO
+  RECHAZADO
+}
+
+' Relaciones
+Empleado "1" -- "0..*" HistorialPuesto : tiene >
+Puesto "1" -- "0..*" HistorialPuesto : asignado a >
+Empleado "1" -- "0..*" Prestamo : solicita >
+Prestamo "1" -- "0..*" Abono : tiene >
+Prestamo ..> EstadoPrestamo : usa
+
+' Notas explicativas
+note right of Empleado
+  **Reglas de negocio:**
+  - Solo puede tener un puesto activo
+  - Antigüedad >= 1 año para préstamo
+  - Solo un préstamo activo a la vez
+end note
+
+note left of Prestamo
+  **Fórmulas:**
+  pago_capital = monto / plazo_meses
+  monto_max = sueldo_actual × 6
+  
+  **Estados:**
+  SOLICITADO → APROBADO/RECHAZADO
+  APROBADO → ACTIVO (al registrar 1er abono)
+  ACTIVO → CONCLUIDO (saldo = 0)
+end note
+
+note bottom of Abono
+  **Cálculos:**
+  interes = saldo_anterior × (tasa/100)
+  monto_cobrado = capital + interes
+  saldo_actual = saldo_anterior - capital
+  
+  **Restricción:**
+  número_abono <= plazo_meses
+end note
+
+note top of HistorialPuesto
+  **Restricción:**
+  Solo un registro con
+  fecha_fin = NULL por empleado
+  (puesto actual)
+end note
+
+@enduml

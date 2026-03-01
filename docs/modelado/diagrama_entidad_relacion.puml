@@ -1,0 +1,143 @@
+@startuml diagrama_entidad_relacion
+!define Table(name,desc) class name as desc << (T,#FFAAAA) >>
+!define primary_key(x) <b><color:red>x</color></b>
+!define foreign_key(x) <color:blue>x</color>
+!define unique(x) <color:green>x</color>
+
+title Diagrama Entidad-Relación - Base de Datos PostgreSQL
+
+' Configuración
+skinparam classAttributeIconSize 0
+hide methods
+hide stereotypes
+
+entity "puestos" as puestos {
+  primary_key(id) : SERIAL
+  --
+  nombre : VARCHAR(100) NOT NULL
+  sueldo : NUMERIC(10,2) NOT NULL
+  --
+  UNIQUE(nombre)
+  CHECK(sueldo > 0)
+}
+
+entity "empleados" as empleados {
+  primary_key(id) : SERIAL
+  --
+  nombre : VARCHAR(200) NOT NULL
+  fecha_ingreso : DATE NOT NULL
+  activo : BOOLEAN DEFAULT TRUE
+  --
+  CHECK(fecha_ingreso <= CURRENT_DATE)
+}
+
+entity "historial_puestos" as historial {
+  primary_key(id) : SERIAL
+  --
+  foreign_key(empleado_id) : INTEGER NOT NULL
+  foreign_key(puesto_id) : INTEGER NOT NULL
+  fecha_inicio : DATE NOT NULL
+  fecha_fin : DATE NULL
+  --
+  FK → empleados(id)
+  FK → puestos(id)
+  CHECK(fecha_fin IS NULL OR fecha_fin > fecha_inicio)
+  UNIQUE(empleado_id) WHERE fecha_fin IS NULL
+}
+
+entity "prestamos" as prestamos {
+  primary_key(id) : SERIAL
+  --
+  foreign_key(empleado_id) : INTEGER NOT NULL
+  monto : NUMERIC(12,2) NOT NULL
+  plazo_meses : INTEGER NOT NULL
+  fecha_solicitud : DATE NOT NULL
+  fecha_aprobacion : DATE NULL
+  tasa_interes_mensual : NUMERIC(5,2) DEFAULT 1.0
+  pago_fijo_capital : NUMERIC(12,2) NOT NULL
+  fecha_inicio_descuento : DATE NULL
+  fecha_fin_descuento : DATE NULL
+  saldo_actual : NUMERIC(12,2) NOT NULL
+  estado : VARCHAR(20) NOT NULL
+  --
+  FK → empleados(id)
+  CHECK(monto > 0)
+  CHECK(plazo_meses > 0 AND plazo_meses <= 24)
+  CHECK(saldo_actual >= 0)
+  CHECK(estado IN ('SOLICITADO','APROBADO','ACTIVO','CONCLUIDO','RECHAZADO'))
+  CHECK(fecha_aprobacion IS NULL OR fecha_aprobacion >= fecha_solicitud)
+}
+
+entity "abonos" as abonos {
+  primary_key(id) : SERIAL
+  --
+  foreign_key(prestamo_id) : INTEGER NOT NULL
+  numero_abono : INTEGER NOT NULL
+  fecha : DATE NOT NULL
+  monto_capital : NUMERIC(12,2) NOT NULL
+  monto_interes : NUMERIC(12,2) NOT NULL
+  monto_cobrado : NUMERIC(12,2) NOT NULL
+  saldo_actual : NUMERIC(12,2) NOT NULL
+  --
+  FK → prestamos(id) ON DELETE CASCADE
+  UNIQUE(prestamo_id, numero_abono)
+  CHECK(numero_abono > 0)
+  CHECK(monto_capital >= 0)
+  CHECK(monto_interes >= 0)
+  CHECK(monto_cobrado >= 0)
+  CHECK(saldo_actual >= 0)
+  CHECK(monto_cobrado = monto_capital + monto_interes)
+}
+
+' Relaciones
+empleados ||--o{ historial : "tiene historial"
+puestos ||--o{ historial : "asignado en"
+empleados ||--o{ prestamos : "solicita"
+prestamos ||--o{ abonos : "tiene pagos"
+
+' Notas
+note right of historial
+  **Índice único parcial:**
+  Solo un puesto activo por empleado
+  (fecha_fin IS NULL)
+  
+  **Trigger recomendado:**
+  Cerrar puesto anterior al asignar nuevo
+end note
+
+note right of prestamos
+  **Estados del préstamo:**
+  1. SOLICITADO: Recién creado
+  2. APROBADO: Validado por admin
+  3. ACTIVO: Tiene abonos registrados
+  4. CONCLUIDO: Saldo = 0
+  5. RECHAZADO: No aprobado
+  
+  **Validación adicional:**
+  Solo un préstamo ACTIVO por empleado
+end note
+
+note bottom of abonos
+  **Cálculo automático (trigger):**
+  monto_cobrado = monto_capital + monto_interes
+  
+  **Secuencia:**
+  numero_abono debe ser consecutivo
+  1, 2, 3, ..., plazo_meses
+  
+  **Cascade:**
+  Si se elimina préstamo,
+  se eliminan todos sus abonos
+end note
+
+note top of puestos
+  **Datos de ejemplo:**
+  - PROGRAMADOR JR: $16,000
+  - BECARIO: $10,000
+  - PROGRAMADOR MASTER: $60,000
+  - PROGRAMADOR SENIOR: $40,000
+  - ARQUITECTO SOFTWARE: $50,000
+  - ADMIN INFRAESTRUCTURA: $55,000
+end note
+
+@enduml

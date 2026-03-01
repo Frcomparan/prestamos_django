@@ -1,0 +1,107 @@
+@startuml diagrama_procesos
+!define RECTANGLE class
+
+title Diagrama de Procesos de Negocio - Sistema de Préstamos
+
+|Administrador RH|
+start
+:Gestionar Empleados y Puestos;
+partition "Gestión de Empleados" {
+  :Registrar nuevo empleado;
+  :Asignar puesto inicial;
+  note right
+    Validar datos completos:
+    - Nombre
+    - Fecha de ingreso
+    - Puesto asignado
+  end note
+  :Actualizar historial de puestos;
+}
+
+|Empleado|
+:Solicitar Préstamo;
+partition "Validación de Requisitos" {
+  :Verificar antigüedad >= 1 año;
+  if (¿Cumple antigüedad?) then (Sí)
+    :Calcular sueldo actual;
+    :Verificar monto <= 6 meses sueldo;
+    if (¿Monto válido?) then (Sí)
+      :Verificar préstamos activos;
+      if (¿Sin préstamos activos?) then (Sí)
+        :Registrar solicitud;
+      else (No)
+        :Rechazar - Ya tiene préstamo activo;
+        stop
+      endif
+    else (No)
+      :Rechazar - Monto excede límite;
+      stop
+    endif
+  else (No)
+    :Rechazar - Antigüedad insuficiente;
+    stop
+  endif
+}
+
+|Administrador de Préstamos|
+partition "Aprobación de Préstamo" {
+  :Revisar solicitud;
+  :Evaluar condiciones;
+  if (¿Aprobar?) then (Sí)
+    :Marcar como APROBADO;
+    :Calcular pago mensual a capital;
+    note right
+      Pago capital = Monto / Plazo
+      Ej: $20,000 / 12 = $1,666.67
+    end note
+    :Establecer fechas de descuento;
+    :Generar calendario de pagos;
+    :Cambiar estado a ACTIVO;
+  else (No)
+    :Marcar como RECHAZADO;
+    stop
+  endif
+}
+
+partition "Gestión de Abonos Mensuales" {
+  repeat
+    :Registrar nuevo abono;
+    :Obtener saldo anterior;
+    :Aplicar pago fijo a capital;
+    :Calcular interés del mes;
+    note right
+      Interés = Saldo anterior × 0.01
+      Monto cobrado = Pago capital + Interés
+      Nuevo saldo = Saldo anterior - Pago capital
+    end note
+    :Actualizar saldo del préstamo;
+    :Registrar detalle del abono;
+    
+    if (¿Saldo = 0?) then (Sí)
+      :Cambiar estado a CONCLUIDO;
+      stop
+    else (No)
+      :Mantener estado ACTIVO;
+    endif
+  repeat while (¿Continuar pagando?) is (Sí)
+}
+
+|Consultor de Reportes|
+partition "Generación de Reportes" {
+  :Seleccionar tipo de reporte;
+  fork
+    :Historial de empleado;
+  fork again
+    :Detalles de préstamo;
+  fork again
+    :Préstamos activos;
+  fork again
+    :Listado general;
+  end fork
+  :Generar reporte;
+  :Exportar/Visualizar;
+}
+
+stop
+
+@enduml

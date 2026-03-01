@@ -1,0 +1,110 @@
+@startuml diagrama_casos_uso
+left to right direction
+skinparam packageStyle rectangle
+
+title Diagrama de Casos de Uso - Sistema de Préstamos
+
+actor "Administrador RH" as AdminRH #LightBlue
+actor "Administrador de Préstamos" as AdminPrestamos #LightGreen
+actor "Empleado" as Empleado #LightYellow
+actor "Consultor de Reportes" as Consultor #LightPink
+
+rectangle "Sistema de Gestión de Préstamos" {
+  
+  package "Gestión de Catálogos" #DDDDDD {
+    usecase "RF-A: Listar Puestos" as UC_A
+    usecase "RF-B: Agregar Puesto" as UC_B
+    usecase "RF-C: Listar Empleados" as UC_C
+    usecase "RF-D: Agregar Empleado" as UC_D
+    usecase "RF-I: Modificar Empleado" as UC_I
+  }
+  
+  package "Gestión de Historial" #E8F4F8 {
+    usecase "RF-E: Ver Historial de Puestos" as UC_E
+    usecase "RF-F: Cambiar Puesto Empleado" as UC_F
+    usecase "RF-G: Ver Historial de Préstamos" as UC_G
+  }
+  
+  package "Gestión de Préstamos" #F0F8E8 {
+    usecase "RF-K: Solicitar/Agregar Préstamo" as UC_K
+    usecase "RF-H: Ver Detalles de Préstamo" as UC_H
+    usecase "RF-J: Listar Todos los Préstamos" as UC_J
+    usecase "RF-M: Listar Préstamos Detallados" as UC_M
+    usecase "Validar Requisitos" as UC_ValidarReq
+    usecase "Calcular Monto Máximo" as UC_CalcMonto
+    usecase "Aprobar/Rechazar Préstamo" as UC_Aprobar
+  }
+  
+  package "Gestión de Abonos" #FFF8E8 {
+    usecase "RF-L: Registrar Abono" as UC_L
+    usecase "Calcular Interés" as UC_CalcInteres
+    usecase "Actualizar Saldo" as UC_ActSaldo
+  }
+  
+  package "Reportes y Consultas" #F8E8F0 {
+    usecase "RF-N: Reporte de Préstamo" as UC_N
+    usecase "RF-O: Historial Préstamos Empleado" as UC_O
+    usecase "RF-P: Préstamos Activos por Fecha" as UC_P
+  }
+}
+
+' Relaciones: Administrador RH
+AdminRH --> UC_A
+AdminRH --> UC_B
+AdminRH --> UC_C
+AdminRH --> UC_D
+AdminRH --> UC_I
+AdminRH --> UC_E
+AdminRH --> UC_F
+
+' Relaciones: Empleado
+Empleado --> UC_K
+Empleado --> UC_G
+Empleado --> UC_H
+
+' Relaciones: Administrador de Préstamos
+AdminPrestamos --> UC_K
+AdminPrestamos --> UC_L
+AdminPrestamos --> UC_J
+AdminPrestamos --> UC_M
+AdminPrestamos --> UC_Aprobar
+AdminPrestamos --> UC_H
+
+' Relaciones: Consultor
+Consultor --> UC_N
+Consultor --> UC_O
+Consultor --> UC_P
+Consultor --> UC_J
+Consultor --> UC_M
+
+' Relaciones include/extend
+UC_K ..> UC_ValidarReq : <<include>>
+UC_K ..> UC_CalcMonto : <<include>>
+UC_K ..> UC_Aprobar : <<extend>>
+
+UC_L ..> UC_CalcInteres : <<include>>
+UC_L ..> UC_ActSaldo : <<include>>
+
+UC_F ..> UC_E : <<include>>
+
+' Notas explicativas
+note right of UC_ValidarReq
+  Valida:
+  - Antigüedad >= 1 año
+  - Sin préstamos activos
+  - Monto válido
+end note
+
+note right of UC_CalcInteres
+  Interés = Saldo × 0.01
+  Monto = Capital + Interés
+end note
+
+note bottom of UC_K
+  Estados del préstamo:
+  SOLICITADO → APROBADO → 
+  ACTIVO → CONCLUIDO
+  (o RECHAZADO)
+end note
+
+@enduml
