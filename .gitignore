@@ -114,3 +114,7 @@ backups/
 /out/*
 
 /docs/ap/*
+
+/docs/pdfs/*
+
+/docs/tareas/*.pdf
