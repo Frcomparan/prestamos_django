@@ -234,9 +234,6 @@ class EmpleadoAdmin(admin.ModelAdmin):
     # Filtros en la barra lateral
     list_filter = ['activo', 'fecha_ingreso']
 
-    # Campos de solo lectura (no se pueden editar)
-    readonly_fields = ['fecha_ingreso']
-
     # Ordenar por fecha de ingreso más reciente primero
     ordering = ['-fecha_ingreso']
 
@@ -266,16 +263,12 @@ class EmpleadoAdmin(admin.ModelAdmin):
    - `activo`: Filtra por Sí/No
    - `fecha_ingreso`: Filtra por año (Django lo detecta automáticamente)
 
-3. **`readonly_fields = ['fecha_ingreso']`**
-   - Estos campos se muestran pero NO se pueden editar
-   - Útil para campos que no deben cambiar después de crearse
-
-4. **Método `antiguedad_años(self, obj)`**
+3. **Método `antiguedad_años(self, obj)`**
    - Método personalizado que calcula la antigüedad
    - `obj` es el objeto Empleado actual
    - Retorna una cadena de texto formateada
 
-5. **`@admin.display(description='...')`**
+4. **`@admin.display(description='...')`**
    - Decorador que define cómo se muestra el método
    - `description`: El título de la columna en la tabla
 
@@ -386,7 +379,6 @@ class EmpleadoAdmin(admin.ModelAdmin):
     list_display = ['nombre', 'fecha_ingreso', 'activo', 'antiguedad_años']
     search_fields = ['nombre']
     list_filter = ['activo', 'fecha_ingreso']
-    readonly_fields = ['fecha_ingreso']
     ordering = ['-fecha_ingreso']
     list_per_page = 25
 
