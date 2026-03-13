@@ -1,7 +1,6 @@
 from django.contrib import admin
 from .models import Puesto, Empleado, HistorialPuesto
 
-
 @admin.register(Puesto)
 class PuestoAdmin(admin.ModelAdmin):
     list_display = ['nombre', 'sueldo']
