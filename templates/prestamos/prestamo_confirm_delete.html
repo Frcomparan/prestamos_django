@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Eliminar Prestamo{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 560px; margin: 0 auto;">
+    <h1>Confirmar eliminacion</h1>
+    <p>Esta seguro de eliminar el prestamo #{{ prestamo.id }} de <strong>{{ prestamo.empleado.nombre }}</strong>?</p>
+
+    <form method="post" class="actions">
+        {% csrf_token %}
+        <button class="btn btn-danger" type="submit">Si, eliminar</button>
+        <a class="btn btn-secondary" href="{% url 'prestamo_list' %}">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

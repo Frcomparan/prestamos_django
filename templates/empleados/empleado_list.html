@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Empleados{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; gap: 0.8rem; flex-wrap: wrap;">
+        <h1>Empleados</h1>
+        <a class="btn btn-primary" href="{% url 'empleado_create' %}">Nuevo empleado</a>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Fecha ingreso</th>
+                <th>Activo</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for empleado in empleados %}
+            <tr>
+                <td>{{ empleado.id }}</td>
+                <td>
+                    <a href="{% url 'empleado_detail' empleado.id %}" style="color: var(--primary); text-decoration: none; font-weight: 500;">
+                        {{ empleado.nombre }}
+                    </a>
+                </td>
+                <td>{{ empleado.fecha_ingreso|date:'Y-m-d' }}</td>
+                <td>{% if empleado.activo %}Si{% else %}No{% endif %}</td>
+                <td>
+                    <div class="actions">
+                        <a class="btn btn-secondary" href="{% url 'empleado_detail' empleado.id %}">Ver</a>
+                        <a class="btn btn-secondary" href="{% url 'empleado_update' empleado.id %}">Editar</a>
+                        <a class="btn btn-danger" href="{% url 'empleado_delete' empleado.id %}">Eliminar</a>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">No hay empleados registrados.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

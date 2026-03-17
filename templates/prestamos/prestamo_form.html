@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Formulario Prestamo{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 700px; margin: 0 auto;">
+    <h1>{% if prestamo %}Editar prestamo{% else %}Nuevo prestamo{% endif %}</h1>
+
+    {% if errors %}
+    <div class="errors">
+        <ul style="margin: 0; padding-left: 1.2rem;">
+            {% for error in errors %}
+            <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <form method="post" class="form-grid">
+        {% csrf_token %}
+
+        <div>
+            <label for="empleado">Empleado</label>
+            <select id="empleado" name="empleado" required>
+                <option value="">Seleccione un empleado</option>
+                {% for empleado in empleados %}
+                <option value="{{ empleado.id }}" {% if prestamo and prestamo.empleado_id == empleado.id %}selected{% endif %}>
+                    {{ empleado.nombre }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <label for="monto">Monto</label>
+            <input id="monto" name="monto" type="number" step="0.01" value="{{ prestamo.monto|default:'' }}" required>
+        </div>
+
+        <div>
+            <label for="plazo_meses">Plazo (meses)</label>
+            <input id="plazo_meses" name="plazo_meses" type="number" value="{{ prestamo.plazo_meses|default:'' }}" required>
+        </div>
+
+        <div>
+            <label for="tasa_interes_mensual">Tasa interes mensual</label>
+            <input id="tasa_interes_mensual" name="tasa_interes_mensual" type="number" step="0.01" value="{{ prestamo.tasa_interes_mensual|default:'1.00' }}" required>
+        </div>
+
+        <div>
+            <label for="estado">Estado</label>
+            <select id="estado" name="estado">
+                <option value="SOLICITADO" {% if prestamo.estado == 'SOLICITADO' or not prestamo %}selected{% endif %}>SOLICITADO</option>
+                <option value="APROBADO" {% if prestamo.estado == 'APROBADO' %}selected{% endif %}>APROBADO</option>
+                <option value="RECHAZADO" {% if prestamo.estado == 'RECHAZADO' %}selected{% endif %}>RECHAZADO</option>
+                <option value="PAGADO" {% if prestamo.estado == 'PAGADO' %}selected{% endif %}>PAGADO</option>
+            </select>
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-primary" type="submit">Guardar</button>
+            <a class="btn btn-secondary" href="{% url 'prestamo_list' %}">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

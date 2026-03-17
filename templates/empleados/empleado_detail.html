@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}{{ empleado.nombre }} - Detalle{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; gap: 0.8rem; flex-wrap: wrap;">
+        <h1>{{ empleado.nombre }}</h1>
+        <div style="display: flex; gap: 0.5rem;">
+            <a class="btn btn-secondary" href="{% url 'empleado_update' empleado.id %}">Editar</a>
+            <a class="btn btn-danger" href="{% url 'empleado_delete' empleado.id %}">Eliminar</a>
+            <a class="btn btn-default" href="{% url 'empleado_list' %}">Volver</a>
+        </div>
+    </div>
+
+    <!-- Información General -->
+    <section style="margin-bottom: 2rem;">
+        <h2>Información General</h2>
+        <table>
+            <tbody>
+                <tr>
+                    <td><strong>ID:</strong></td>
+                    <td>{{ empleado.id }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Nombre:</strong></td>
+                    <td>{{ empleado.nombre }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Fecha de Ingreso:</strong></td>
+                    <td>{{ empleado.fecha_ingreso|date:'d/m/Y' }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Estado:</strong></td>
+                    <td>
+                        {% if empleado.activo %}
+                            <span style="padding: 0.25rem 0.75rem; background: #d1fae5; color: #065f46; border-radius: 4px;">Activo</span>
+                        {% else %}
+                            <span style="padding: 0.25rem 0.75rem; background: #f3f4f6; color: #374151; border-radius: 4px;">Inactivo</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- Puesto Actual -->
+    <section style="margin-bottom: 2rem;">
+        <h2>Puesto Actual</h2>
+        <table>
+            <tbody>
+                {% with puesto=empleado.obtener_puesto_actual %}
+                    {% if puesto %}
+                    <tr>
+                        <td><strong>Puesto:</strong></td>
+                        <td>{{ puesto.nombre }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Sueldo:</strong></td>
+                        <td>${{ puesto.sueldo|floatformat:2 }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="2"><em>Sin puesto asignado</em></td>
+                    </tr>
+                    {% endif %}
+                {% endwith %}
+            </tbody>
+        </table>
+    </section>
+
+    <!-- Historial de Puestos -->
+    <section style="margin-bottom: 2rem;">
+        <h2>Historial de Puestos</h2>
+        
+        {% if historial %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Puesto</th>
+                    <th>Sueldo</th>
+                    <th>Fecha Inicio</th>
+                    <th>Fecha Fin</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for h in historial %}
+                <tr>
+                    <td>{{ h.puesto.nombre }}</td>
+                    <td>${{ h.puesto.sueldo|floatformat:2 }}</td>
+                    <td>{{ h.fecha_inicio|date:'d/m/Y' }}</td>
+                    <td>{% if h.fecha_fin %}{{ h.fecha_fin|date:'d/m/Y' }}{% else %}<em>Actualidad</em>{% endif %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p><em>Sin historial de puestos</em></p>
+        {% endif %}
+    </section>
+
+    <!-- Préstamos -->
+    <section>
+        <h2>Préstamos</h2>
+        
+        {% if prestamos %}
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Monto</th>
+                    <th>Saldo</th>
+                    <th>Plazo</th>
+                    <th>Tasa</th>
+                    <th>Estado</th>
+                    <th>Solicitud</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in prestamos %}
+                <tr>
+                    <td>#{{ p.id }}</td>
+                    <td>${{ p.monto|floatformat:2 }}</td>
+                    <td>${{ p.saldo_actual|floatformat:2 }}</td>
+                    <td>{{ p.plazo_meses }} meses</td>
+                    <td>{{ p.tasa_interes_mensual }}%</td>
+                    <td>
+                        <span style="padding: 0.25rem 0.75rem; background: #e0e7ff; color: #3730a3; border-radius: 4px; font-size: 0.9rem;">
+                            {{ p.get_estado_display }}
+                        </span>
+                    </td>
+                    <td>{{ p.fecha_solicitud|date:'d/m/Y' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p><em>Sin préstamos</em></p>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

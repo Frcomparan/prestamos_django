@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Formulario Empleado{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 640px; margin: 0 auto;">
+    <h1>{% if empleado %}Editar empleado{% else %}Nuevo empleado{% endif %}</h1>
+
+    {% if errors %}
+    <div class="errors">
+        <ul style="margin: 0; padding-left: 1.2rem;">
+            {% for error in errors %}
+            <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <form method="post" class="form-grid">
+        {% csrf_token %}
+        <div>
+            <label for="nombre">Nombre</label>
+            <input id="nombre" name="nombre" type="text" value="{{ empleado.nombre|default:'' }}" required>
+        </div>
+        <div>
+            <label for="fecha_ingreso">Fecha de ingreso</label>
+            <input id="fecha_ingreso" name="fecha_ingreso" type="date" value="{{ empleado.fecha_ingreso|date:'Y-m-d' }}" required>
+        </div>
+        <div>
+            <label for="activo">Estado</label>
+            <select id="activo" name="activo">
+                <option value="true" {% if not empleado or empleado.activo %}selected{% endif %}>Activo</option>
+                <option value="false" {% if empleado and not empleado.activo %}selected{% endif %}>Inactivo</option>
+            </select>
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-primary" type="submit">Guardar</button>
+            <a class="btn btn-secondary" href="{% url 'empleado_list' %}">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

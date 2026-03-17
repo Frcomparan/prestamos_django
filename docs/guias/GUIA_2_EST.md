@@ -1,4 +1,4 @@
-# Sesión 2: Backend - Modelos Completos y API
+# Sesión 2: Backend - Modelos Completos, Controladores y Templates
 
 **Duración estimada:** 3-4 horas  
 **Nivel:** Intermedio  
@@ -11,8 +11,8 @@ Al finalizar esta sesión, podrás:
 - ✅ Completar los modelos de Préstamos y Abonos
 - ✅ Agregar validaciones de negocio
 - ✅ Crear métodos personalizados en modelos
-- ✅ Implementar señales de Django
-- ✅ Crear una API REST básica
+- ✅ Implementar CRUD básico de Empleados con controladores y templates
+- ✅ Dejar definido el plan para CRUD de Préstamos como actividad
 
 ---
 
@@ -658,373 +658,394 @@ class AbonoAdmin(admin.ModelAdmin):
 
 ---
 
-## 🚀 Parte 4: API REST Básica
+## 🖥️ Parte 4: Configuración de Templates y Archivos Estáticos
 
-### ¿Qué es una API REST?
+En esta sección, prepararemos la estructura para servir templates e archivos estáticos desde Django.
 
-**API** = Application Programming Interface (Interfaz de Programación)  
-**REST** = Representational State Transfer
+### Paso 1: Crear Estructura de Carpetas de Templates
 
-Es una forma de que otras aplicaciones se comuniquen con tu sistema usando HTTP.
-
-**Ejemplo:**
-
-```
-GET /api/empleados/     → Lista de empleados (JSON)
-POST /api/prestamos/    → Crear préstamo
-```
-
-### Paso 1: Instalar Django REST Framework
-
-Edita `requirements.txt`:
-
-```txt
-Django==5.0.2
-psycopg2-binary==2.9.9
-python-decouple==3.8
-djangorestframework==3.14.0  # ← Agregar esta línea
-```
+Desde la raíz del proyecto (donde está `manage.py`), crea la siguiente estructura:
 
 ```bash
-# Reconstruir imagen
-docker compose build
-
-# Reiniciar servicios
-docker compose up
+mkdir -p templates/components
+mkdir -p templates/empleados
+mkdir -p templates/prestamos
 ```
 
-### Paso 2: Configurar REST Framework
+Tu estructura debe verse así:
 
-Edita `config/settings.py`:
+```
+aplicacion_prestamos/
+├── templates/
+│   ├── base.html                    # Template base (navbar, footer, etc)
+│   ├── components/
+│   │   ├── navbar.html             # Navegación reutilizable
+│   │   └── footer.html             # Pie de página
+│   ├── empleados/
+│   │   ├── empleado_list.html      # Listado de empleados
+│   │   ├── empleado_detail.html    # Detalle de un empleado
+│   │   ├── empleado_form.html      # Formulario crear/editar
+│   │   └── empleado_confirm_delete.html
+│   └── prestamos/
+│       ├── prestamo_list.html
+│       ├── prestamo_form.html
+│       └── prestamo_confirm_delete.html
+├── static/
+│   ├── css/
+│   │   └── style.css
+│   ├── js/
+│   │   └── main.js
+│   └── img/
+│       └── logo.png
+├── manage.py
+└── ...
+```
+
+### Paso 2: Configurar Django para Templates
+
+Edita `config/settings.py` y busca la sección `TEMPLATES`:
 
 ```python
-INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'rest_framework',  # ← Agregar
-    'empleados',
-    'prestamos',
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [
+            BASE_DIR / 'templates',  # ← Agregar esta línea
+        ],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
 ]
+```
 
-# Agregar al final del archivo
-REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10
+**Explicación:**
+
+- **DIRS**: Lista de carpetas donde Django busca templates globales
+- **APP_DIRS**: Si está True, Django también busca en `app/templates/` de cada app
+- **BASE_DIR / 'templates'**: Ruta absoluta a la carpeta de templates
+
+### Paso 3: Archivos Estáticos (CSS, Imágenes, JavaScript)
+
+Los **archivos estáticos** son aquellos que no cambian según el usuario:
+
+- **CSS**: Estilos visuales
+- **JavaScript**: Lógica del navegador
+- **Imágenes**: Logo, iconos, fotos
+
+#### Paso A: Crear Estructura de Carpetas
+
+En la raíz del proyecto (donde está `manage.py`), crea:
+
+```bash
+mkdir -p static/css static/js static/img
+```
+
+Tu estructura debe verse así:
+
+```
+aplicacion_prestamos/
+├── static/
+│   ├── css/
+│   │   └── style.css
+│   ├── js/
+│   │   └── main.js
+│   └── img/
+│       └── logo.png
+├── templates/
+├── manage.py
+└── ...
+```
+
+#### Paso B: Crear CSS Base
+
+Crea `static/css/style.css`:
+
+```css
+/* Estilos globales */
+:root {
+  --primary: #0f766e;
+  --danger: #b91c1c;
+  --success: #16a34a;
+  --gray: #6b7280;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 20px;
+  background-color: #f3f4f6;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  background: white;
+  margin: 20px 0;
+}
+
+table th {
+  background-color: var(--primary);
+  color: white;
+  padding: 12px;
+  text-align: left;
+}
+
+table td {
+  padding: 10px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+table tr:hover {
+  background-color: #f9fafb;
+}
+
+.btn {
+  display: inline-block;
+  padding: 8px 16px;
+  margin: 4px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #0d5a52;
+}
+
+.btn-danger {
+  background-color: var(--danger);
+  color: white;
+}
+
+.btn-danger:hover {
+  background-color: #991b1b;
+}
+
+form {
+  background: white;
+  padding: 20px;
+  border-radius: 4px;
+  margin: 20px 0;
+  max-width: 600px;
+}
+
+form label {
+  display: block;
+  margin: 10px 0 5px 0;
+  font-weight: bold;
+  color: var(--gray);
+}
+
+form input,
+form select {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 15px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+form input:focus,
+form select:focus {
+  border-color: var(--primary);
+  outline: none;
+}
+
+.card {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+h1 {
+  color: var(--primary);
+  margin-top: 0;
+}
+
+.error {
+  background-color: #fee2e2;
+  color: #991b1b;
+  padding: 12px;
+  border-left: 4px solid var(--danger);
+  margin-bottom: 20px;
 }
 ```
 
-### Paso 3: Crear Serializers
+#### Paso C: Crear JavaScript Base
 
-Los **serializers** convierten modelos a JSON y viceversa.
+Crea `static/js/main.js`:
 
-Crea `empleados/serializers.py`:
+```javascript
+// Confirmar eliminaciones
+document.addEventListener('DOMContentLoaded', function () {
+  const deleteButtons = document.querySelectorAll('[data-confirm="delete"]');
 
-```python
-from rest_framework import serializers
-from .models import Empleado, Puesto, HistorialPuesto
+  deleteButtons.forEach((button) => {
+    button.addEventListener('click', function (e) {
+      const name = this.getAttribute('data-name');
+      if (!confirm(`¿Seguro que deseas eliminar: ${name}?`)) {
+        e.preventDefault();
+      }
+    });
+  });
+});
 
-class PuestoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Puesto
-        fields = ['id', 'nombre', 'sueldo']
-
-class EmpleadoSerializer(serializers.ModelSerializer):
-    # Campos calculados
-    antiguedad = serializers.SerializerMethodField()
-    puesto_actual = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Empleado
-        fields = [
-            'id',
-            'nombre',
-            'fecha_ingreso',
-            'activo',
-            'antiguedad',
-            'puesto_actual'
-        ]
-
-    def get_antiguedad(self, obj):
-        """Calcula antigüedad en años."""
-        return round(obj.calcular_antiguedad(), 2)
-
-    def get_puesto_actual(self, obj):
-        """Obtiene el puesto actual."""
-        puesto = obj.obtener_puesto_actual()
-        if puesto:
-            return PuestoSerializer(puesto).data
-        return None
-
-class HistorialPuestoSerializer(serializers.ModelSerializer):
-    empleado_nombre = serializers.CharField(source='empleado.nombre', read_only=True)
-    puesto_nombre = serializers.CharField(source='puesto.nombre', read_only=True)
-
-    class Meta:
-        model = HistorialPuesto
-        fields = [
-            'id',
-            'empleado',
-            'empleado_nombre',
-            'puesto',
-            'puesto_nombre',
-            'fecha_inicio',
-            'fecha_fin'
-        ]
+// Validación simple de formularios
+function validarMonto(value) {
+  if (isNaN(value) || value <= 0) {
+    alert('El monto debe ser un número positivo');
+    return false;
+  }
+  return true;
+}
 ```
 
-Crea `prestamos/serializers.py`:
+#### Paso D: Actualizar Base Template
 
-```python
-from rest_framework import serializers
-from .models import Prestamo, Abono
-from empleados.serializers import EmpleadoSerializer
+Edita `templates/base.html` y usa `{% load static %}` en la cabecera:
 
-class PrestamoSerializer(serializers.ModelSerializer):
-    empleado_detalle = EmpleadoSerializer(source='empleado', read_only=True)
-    total_abonos = serializers.SerializerMethodField()
+```html
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Sistema de Prestamos{% endblock %}</title>
 
-    class Meta:
-        model = Prestamo
-        fields = [
-            'id',
-            'empleado',
-            'empleado_detalle',
-            'monto',
-            'plazo_meses',
-            'fecha_solicitud',
-            'fecha_aprobacion',
-            'tasa_interes_mensual',
-            'pago_fijo_capital',
-            'fecha_inicio_descuento',
-            'fecha_fin_descuento',
-            'saldo_actual',
-            'estado',
-            'total_abonos'
-        ]
-        read_only_fields = ['pago_fijo_capital', 'saldo_actual']
+    <!-- CSS externo -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+    {% block extra_css %}{% endblock %}
+  </head>
+  <body>
+    <!-- Navbar y contenido aquí -->
 
-    def get_total_abonos(self, obj):
-        """Cuenta el número de abonos."""
-        return obj.abonos.count()
-
-class AbonoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Abono
-        fields = [
-            'id',
-            'prestamo',
-            'numero_abono',
-            'fecha',
-            'monto_capital',
-            'monto_interes',
-            'monto_cobrado',
-            'saldo_actual'
-        ]
-        read_only_fields = [
-            'monto_capital',
-            'monto_interes',
-            'monto_cobrado',
-            'saldo_actual'
-        ]
+    <!-- JavaScript externo -->
+    <script src="{% static 'js/main.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+  </body>
+</html>
 ```
 
-### Paso 4: Crear ViewSets
+**Conceptos clave:**
 
-Los **ViewSets** manejan las peticiones HTTP.
+- **`{% load static %}`**: Activa el sistema de archivos estáticos de Django
+- **`{% static 'css/style.css' %}`**: Genera la URL correcta del archivo (`/static/css/style.css`)
+- **En desarrollo**: Django sirve automáticamente desde la carpeta `static/`
+- **En producción**: Ejecutar `python manage.py collectstatic` para copiar los archivos
 
-Crea `empleados/views.py`:
+#### Paso E: Usar Imágenes en Templates
 
-```python
-from rest_framework import viewsets
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from .models import Empleado, Puesto, HistorialPuesto
-from .serializers import (
-    EmpleadoSerializer,
-    PuestoSerializer,
-    HistorialPuestoSerializer
-)
+Ejemplo de cómo usar una imagen en `templates/components/navbar.html`:
 
-class PuestoViewSet(viewsets.ModelViewSet):
-    queryset = Puesto.objects.all()
-    serializer_class = PuestoSerializer
-
-class EmpleadoViewSet(viewsets.ModelViewSet):
-    queryset = Empleado.objects.all()
-    serializer_class = EmpleadoSerializer
-
-    @action(detail=True, methods=['get'])
-    def historial_puestos(self, request, pk=None):
-        """
-        Endpoint personalizado: /api/empleados/{id}/historial_puestos/
-        """
-        empleado = self.get_object()
-        historial = empleado.historial_puestos.all()
-        serializer = HistorialPuestoSerializer(historial, many=True)
-        return Response(serializer.data)
-
-    @action(detail=True, methods=['get'])
-    def puede_solicitar_prestamo(self, request, pk=None):
-        """
-        Endpoint: /api/empleados/{id}/puede_solicitar_prestamo/
-        """
-        empleado = self.get_object()
-        puede, mensaje = empleado.puede_solicitar_prestamo()
-        return Response({
-            'puede_solicitar': puede,
-            'mensaje': mensaje
-        })
-
-class HistorialPuestoViewSet(viewsets.ModelViewSet):
-    queryset = HistorialPuesto.objects.all()
-    serializer_class = HistorialPuestoSerializer
+```html
+{% load static %}
+<header style="background: #0b3c5d; color: #fff; padding: 10px;">
+  <div style="display: flex; align-items: center; gap: 15px;">
+    <img src="{% static 'img/logo.png' %}" alt="Logo" style="height: 50px;" />
+    <strong>Sistema de Prestamos</strong>
+  </div>
+</header>
 ```
 
-Crea`prestamos/views.py`:
+#### Paso F: Cargar CSS en un Template Específico
 
-```python
-from rest_framework import viewsets
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from rest_framework import status
-from .models import Prestamo, Abono
-from .serializers import PrestamoSerializer, AbonoSerializer
+Si necesitas CSS adicional solo para una página:
 
-class PrestamoViewSet(viewsets.ModelViewSet):
-    queryset = Prestamo.objects.all()
-    serializer_class = PrestamoSerializer
-
-    @action(detail=True, methods=['post'])
-    def aprobar(self, request, pk=None):
-        """
-        Endpoint: /api/prestamos/{id}/aprobar/
-        """
-        prestamo = self.get_object()
-        fecha_inicio = request.data.get('fecha_inicio')
-
-        if not fecha_inicio:
-            return Response(
-                {'error': 'Se requiere fecha_inicio'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        from datetime import datetime
-        fecha_inicio = datetime.strptime(fecha_inicio, '%Y-%m-%d').date()
-
-        prestamo.aprobar(fecha_inicio)
-        serializer = self.get_serializer(prestamo)
-        return Response(serializer.data)
-
-    @action(detail=True, methods=['get'])
-    def abonos(self, request, pk=None):
-        """
-        Endpoint: /api/prestamos/{id}/abonos/
-        """
-        prestamo = self.get_object()
-        abonos = prestamo.abonos.all()
-        serializer = AbonoSerializer(abonos, many=True)
-        return Response(serializer.data)
-
-class AbonoViewSet(viewsets.ModelViewSet):
-    queryset = Abono.objects.all()
-    serializer_class = AbonoSerializer
+```html
+{% extends "base.html" %} {% load static %} {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/empleados-styles.css' %}" />
+{% endblock %} {% block content %}
+<!-- Contenido -->
+{% endblock %}
 ```
 
-### Paso 5: Configurar URLs
+#### Paso G: Incluir JavaScript en un Template
 
-Crea `empleados/urls.py`:
-
-```python
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
-from .views import EmpleadoViewSet, PuestoViewSet, HistorialPuestoViewSet
-
-router = DefaultRouter()
-router.register(r'empleados', EmpleadoViewSet)
-router.register(r'puestos', PuestoViewSet)
-router.register(r'historial-puestos', HistorialPuestoViewSet)
-
-urlpatterns = [
-    path('', include(router.urls)),
-]
+```html
+{% extends "base.html" %} {% load static %} {% block extra_js %}
+<script src="{% static 'js/empleados-validation.js' %}"></script>
+{% endblock %} {% block content %}
+<form onsubmit="return validarMonto(document.getElementById('monto').value)">
+  <!-- Formulario -->
+</form>
+{% endblock %}
 ```
 
-Crea `prestamos/urls.py`:
+#### ¿Dónde va cada cosa?
 
-```python
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
-from .views import PrestamoViewSet, AbonoViewSet
-
-router = DefaultRouter()
-router.register(r'prestamos', PrestamoViewSet)
-router.register(r'abonos', AbonoViewSet)
-
-urlpatterns = [
-    path('', include(router.urls)),
-]
-```
-
-Edita `config/urls.py`:
-
-```python
-from django.contrib import admin
-from django.urls import path, include
-
-urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/', include('empleados.urls')),
-    path('api/', include('prestamos.urls')),
-]
-```
-
-### Paso 6: Probar la API
-
-Ve a tu navegador y prueba estos endpoints:
-
-```
-http://localhost:8000/api/empleados/
-http://localhost:8000/api/puestos/
-http://localhost:8000/api/prestamos/
-http://localhost:8000/api/empleados/1/
-http://localhost:8000/api/empleados/1/historial_puestos/
-http://localhost:8000/api/empleados/1/puede_solicitar_prestamo/
-```
-
-Django REST Framework incluye una interfaz web interactiva para probar.
+| Archivo        | Camino                     | Uso                 |
+| -------------- | -------------------------- | ------------------- |
+| CSS global     | `static/css/style.css`     | Todos los templates |
+| CSS específico | `static/css/empleados.css` | Solo empleados      |
+| JS global      | `static/js/main.js`        | Todos los templates |
+| JS específico  | `static/js/empleados.js`   | Solo empleados      |
+| Logo           | `static/img/logo.png`      | Header/navbar       |
+| Iconos         | `static/img/icons/`        | Botones, tablas     |
+| Fotos          | `static/img/uploads/`      | Galería             |
 
 ---
 
-## 📝 Ejercicio Práctico
+### Paso 4: Probar CRUD de Empleados
 
-**Objetivo:** Crear un endpoint personalizado para obtener el reporte de un préstamo.
+Levanta el proyecto:
 
-```python
-# En prestamos/views.py, dentro de PrestamoViewSet
-
-@action(detail=True, methods=['get'])
-def reporte(self, request, pk=None):
-    """
-    Endpoint: /api/prestamos/{id}/reporte/
-    """
-    prestamo = self.get_object()
-    abonos = prestamo.abonos.all()
-
-    return Response({
-        'prestamo': PrestamoSerializer(prestamo).data,
-        'abonos': AbonoSerializer(abonos, many=True).data,
-        'resumen': {
-            'total_pagado': sum(a.monto_cobrado for a in abonos),
-            'total_interes': sum(a.monto_interes for a in abonos),
-            'abonos_realizados': abonos.count(),
-            'abonos_pendientes': prestamo.plazo_meses - abonos.count()
-        }
-    })
+```bash
+docker compose up
 ```
+
+Abre en el navegador:
+
+```
+http://localhost:8000/empleados/
+```
+
+Valida lo siguiente:
+
+1. Puedes crear un empleado.
+2. Puedes editar un empleado.
+3. Puedes eliminar un empleado.
+4. La lista se actualiza correctamente.
+
+---
+
+## 📝 Actividad (Controladores y Templates de Préstamos)
+
+Como práctica para reforzar, implementa CRUD de préstamos con el mismo patrón usado en empleados.
+
+### Requisitos mínimos
+
+1. Crear rutas en `prestamos/urls.py` para listar, crear, editar y eliminar.
+2. Crear controladores en `prestamos/views.py` para esas rutas.
+3. Crear templates en `prestamos/templates/prestamos/`:
+   - `prestamo_list.html`
+   - `prestamo_form.html`
+   - `prestamo_confirm_delete.html`
+4. Mostrar en la lista: empleado, monto, plazo, estado y saldo.
+5. Reutilizar las validaciones del modelo `Prestamo` al guardar.
+
+### Entregable de la actividad
+
+- Captura de la lista de préstamos funcionando.
+- Captura del formulario de creación.
+- Captura de una validación fallando correctamente (por ejemplo monto excesivo).
 
 ---
 
@@ -1034,11 +1055,11 @@ def reporte(self, request, pk=None):
 - [ ] Validaciones implementadas
 - [ ] Métodos personalizados creados
 - [ ] Admin configurado
-- [ ] Django REST Framework instalado
-- [ ] Serializers creados
-- [ ] ViewSets implementados
-- [ ] URLs configuradas
-- [ ] API funcionando
+- [ ] URLs de empleados configuradas
+- [ ] Controladores de empleados implementados
+- [ ] Templates de empleados creados
+- [ ] CRUD de empleados funcionando
+- [ ] Actividad de préstamos asignada
 
 ---
 
@@ -1046,11 +1067,11 @@ def reporte(self, request, pk=None):
 
 Prepárate para:
 
-- Crear templates HTML
-- Implementar vistas con formularios
+- Integrar formularios de Django
+- Mejorar estilos con base template
 - Generar reportes en PDF
 - Mejorar la interfaz de usuario
 
 ---
 
-**¡Excelente trabajo!** Ya tienes un backend completo con API REST. 🚀
+**¡Excelente trabajo!** Ya tienes backend completo y primer CRUD web con controladores y templates. 🚀

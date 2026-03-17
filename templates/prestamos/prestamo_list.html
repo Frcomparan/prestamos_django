@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Prestamos{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; gap: 0.8rem; flex-wrap: wrap;">
+        <h1>Prestamos</h1>
+        <a class="btn btn-primary" href="{% url 'prestamo_create' %}">Nuevo prestamo</a>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Empleado</th>
+                <th>Monto</th>
+                <th>Plazo</th>
+                <th>Tasa mensual</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for prestamo in prestamos %}
+            <tr>
+                <td>{{ prestamo.id }}</td>
+                <td>{{ prestamo.empleado.nombre }}</td>
+                <td>{{ prestamo.monto }}</td>
+                <td>{{ prestamo.plazo_meses }} meses</td>
+                <td>{{ prestamo.tasa_interes_mensual }}</td>
+                <td>{{ prestamo.estado }}</td>
+                <td>
+                    <div class="actions">
+                        <a class="btn btn-secondary" href="{% url 'prestamo_update' prestamo.id %}">Editar</a>
+                        <a class="btn btn-danger" href="{% url 'prestamo_delete' prestamo.id %}">Eliminar</a>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7">No hay prestamos registrados.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
