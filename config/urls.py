@@ -20,5 +20,6 @@ from django.urls import include, path
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('empleados/', include('apps.empleados.urls')),
+    path("prestamos/", include("apps.prestamos.urls")),
     path('', include('apps.empleados.urls')),  # Redirige la raíz a empleados
 ]
