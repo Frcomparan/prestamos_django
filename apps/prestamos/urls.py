@@ -9,7 +9,8 @@ urlpatterns = [
     path("<int:pk>/editar/", views.prestamo_update, name="prestamo_update"),
     path("<int:pk>/eliminar/", views.prestamo_delete, name="prestamo_delete"),
 
-    # prestamos/id/abonos
+    # Abonos
+    path("<int:pk>/abonar/", views.abono_create, name="abono_create"),
     
     # Acciones rápidas
     path("<int:pk>/aprobar/", views.prestamo_aprobar, name="prestamo_aprobar"),

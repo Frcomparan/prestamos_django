@@ -4,7 +4,7 @@ from django.core.paginator import Paginator
 from datetime import datetime, timedelta
 
 from apps.empleados.models import Empleado
-from .models import Prestamo
+from .models import Prestamo, Abono
 
 def prestamo_detail(request, pk):
 	"""Detalle de un préstamo con información del empleado"""
@@ -160,3 +160,45 @@ def prestamo_liberar(request, pk):
 		prestamo.save()
 	
 	return redirect("prestamo_list")
+
+def abono_create(request, pk):
+	"""Crear un abono para un préstamo específico"""
+	prestamo = get_object_or_404(Prestamo, pk=pk)
+	
+	# Validar que el préstamo sea ACTIVO
+	if prestamo.estado != 'ACTIVO':
+		context = {
+			"prestamo": prestamo,
+			"error": "Solo se pueden registrar abonos para préstamos en estado ACTIVO."
+		}
+		return render(request, "prestamos/prestamo_detail.html", context)
+	
+	if request.method == "POST":
+		from .models import Abono
+		
+		try:
+			# Crear el abono
+			abono = Abono(prestamo=prestamo)
+			abono.save()
+			
+			# Redirigir al detalle del préstamo
+			return redirect("prestamo_detail", pk=prestamo.pk)
+		except Exception as e:
+			context = {
+				"prestamo": prestamo,
+				"error": f"Error al crear el abono: {str(e)}"
+			}
+			return render(request, "prestamos/abono_form.html", context)
+	
+	# Calcular los montos del abono
+	monto_capital = prestamo.pago_fijo_capital
+	monto_interes = prestamo.saldo_actual * (prestamo.tasa_interes_mensual / 100)
+	monto_total = monto_capital + monto_interes
+	
+	context = {
+		"prestamo": prestamo,
+		"monto_capital": monto_capital,
+		"monto_interes": monto_interes,
+		"monto_total": monto_total,
+	}
+	return render(request, "prestamos/abono_form.html", context)

@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Registrar Abono{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 640px; margin: 0 auto;">
+    <h1>Registrar Abono</h1>
+
+    {% if error %}
+    <div style="background: #fee2e2; color: #7f1d1d; border: 1px solid #fecaca; border-radius: 8px; padding: 0.7rem; margin-bottom: 1rem;">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    <!-- Información del Préstamo -->
+    <section style="margin-bottom: 2rem; background: #f9f9f9; padding: 1rem; border-radius: 8px;">
+        <h3>Información del Préstamo</h3>
+        <table style="width: 100%; border: none;">
+            <tbody>
+                <tr>
+                    <td><strong>ID:</strong></td>
+                    <td>#{{ prestamo.id }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Empleado:</strong></td>
+                    <td>{{ prestamo.empleado.nombre }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Saldo Actual:</strong></td>
+                    <td><strong>${{ prestamo.saldo_actual|floatformat:2 }}</strong></td>
+                </tr>
+                <tr>
+                    <td><strong>Pago Fijo de Capital:</strong></td>
+                    <td>${{ prestamo.pago_fijo_capital|floatformat:2 }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Tasa de Interés Mensual:</strong></td>
+                    <td>{{ prestamo.tasa_interes_mensual }}%</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- Confirmación del Abono -->
+    <div style="background: #e7f3ff; padding: 1rem; border-left: 4px solid var(--primary); margin-bottom: 1rem; border-radius: 4px;">
+        <p><strong>Se registrará un abono con los siguientes valores:</strong></p>
+        <ul style="margin: 0.5rem 0; padding-left: 1.2rem;">
+            <li><strong>Capital:</strong> ${{ monto_capital|floatformat:2 }}</li>
+            <li><strong>Interés:</strong> ${{ monto_interes|floatformat:2 }}</li>
+            <li><strong>Total a Pagar:</strong> ${{ monto_total|floatformat:2 }}</li>
+        </ul>
+        <p style="margin-top: 1rem; font-size: 0.9rem; color: #555;">
+            El saldo se actualizará automáticamente después del pago.
+            {% if prestamo.saldo_actual == prestamo.pago_fijo_capital %}
+            <strong style="color: var(--primary);">Este será el último abono del préstamo.</strong>
+            {% endif %}
+        </p>
+    </div>
+
+    <form method="post" style="margin-top: 2rem;">
+        {% csrf_token %}
+        <div class="actions">
+            <button class="btn btn-primary" type="submit">Confirmar Abono</button>
+            <a class="btn btn-secondary" href="{% url 'prestamo_detail' prestamo.id %}">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
