@@ -17,9 +17,11 @@ class HistorialPuestoInline(admin.TabularInline):
 
 @admin.register(Empleado)
 class EmpleadoAdmin(admin.ModelAdmin):
-    list_display = ['nombre', 'fecha_ingreso', 'activo', 'antiguedad_años']
+    list_display = ['nombre', 'fecha_ingreso', 'activo', 'antiguedad_años', 'tiene_foto']
     search_fields = ['nombre']
     list_filter = ['activo', 'fecha_ingreso']
+    readonly_fields = ['preview_foto']
+    fields = ['nombre', 'fecha_ingreso', 'activo', 'foto_perfil', 'preview_foto']
     # readonly_fields = ['fecha_ingreso']
     ordering = ['-fecha_ingreso']
     list_per_page = 25
@@ -27,6 +29,22 @@ class EmpleadoAdmin(admin.ModelAdmin):
 
     # Acción personalizada para marcar empleados como inactivos
     actions = [marcar_inactivo]
+    
+    def tiene_foto(self, obj):
+        return bool(obj.foto_perfil)
+    
+    tiene_foto.boolean = True
+    tiene_foto.short_description = 'Foto de perfil'
+    
+    def preview_foto(self, obj):
+        if obj.foto_perfil:
+            from django.utils.html import format_html
+            return format_html(
+                '<img src="{}" width="150" height="150" style="border-radius: 8px;" />',
+                obj.foto_perfil.url
+            )
+        return 'Sin foto de perfil'
+    preview_foto.short_description = 'Vista previa de foto'
 
     # Mostrar el historial de puestos directamente en la página del empleado
     inlines = [HistorialPuestoInline]

@@ -17,3 +17,6 @@ dj-database-url==2.1.0
 
 # Manejo de archivos estáticos en producción (opcional)
 whitenoise==6.6.0
+
+# Procesamiento de imágenes
+Pillow==10.1.0
