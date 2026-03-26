@@ -1,4 +1,5 @@
 from django.db import models
+from .utils import generar_nombre_foto_empleado
 
 # Create your models here.
 class Puesto(models.Model):
@@ -12,6 +13,12 @@ class Empleado(models.Model):
   nombre = models.CharField(max_length=200)
   fecha_ingreso = models.DateField()
   activo = models.BooleanField(default=True)
+  foto_perfil = models.ImageField(
+    upload_to=generar_nombre_foto_empleado,
+    blank=True,
+    null=True,
+    help_text='Foto de perfil o identificación del empleado'
+  )
 
   def __str__(self):
       return self.nombre
